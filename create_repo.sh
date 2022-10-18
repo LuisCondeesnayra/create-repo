@@ -100,9 +100,9 @@ removeReferences(){
 	sed -i '' 's/dummy/'"$repo_name"'/g' README.md
 	sed -i '' 's/Luis-Rolando-Conde-Esnayra/'"$username"'/g' README.md
 	sed -i '' 's/Homulilly_Clara_dolls/lrce-'$repo_name'/g' project.tf
-	pwd=$(pwd)
-	mv "$pwd"/src/Dummy.js "$pwd"/src/$camel_name.js
-	mv "$pwd"/test/Dummy.test.js "$pwd"/test/$camel_name.test.js
+	
+	mv src/Dummy.js src/$camel_name.js
+	mv test/Dummy.test.js test/$camel_name.test.js
 	echo "References removed!"
 
 }
