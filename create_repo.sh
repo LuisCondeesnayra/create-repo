@@ -1,6 +1,27 @@
 #_____________________________________Functions_____________________________________
-# Check for non empty tokens
+
+initialSetup(){
+#get environment variables
+	source .env
+	source ~/.zshrc
+	cd ../Katas
+}
+
+getRepoName(){
+#Repository Name
+while [ -z "$repo_name" ]; do
+read -p "Enter the repository name: " repo_name
+done
+}
+
+setupTokens(){
+#Snyk and sonarCloud Tokens
+checkToken "SONAR_TOKEN" "https://sonarcloud.io/account/security/" "sonar cloud"
+checkToken "SNYK_TOKEN" "https://app.snyk.io/account" "snyk"
+export TF_VAR_token=$SONAR_TOKEN
+}
 checkToken (){
+# Check for non empty tokens
 	token=$1
 	while [ -z  "${!token}" ]; do
 		open $2
@@ -48,13 +69,15 @@ repoCreateClone(){
 		returnCode=$?
 		sleep 1;
 	done
- sleep 5
+ 	sleep 5
 #Repository cloning
 	gh repo clone https://github.ibm.com/$username/$repo_name && echo "Cloned complete" 
 	while  [ "${returnCode}" != "0" ]; do
 		returnCode=$?
 		sleep 1;
 	done
+	
+	cd $repo_name
 }
 
 # Login in travis and sync up repositories
@@ -70,11 +93,13 @@ travisLoginSync(){
 removeReferences(){
 	sed -i '' 's/Luis-Rolando-Conde-Esnayra/'$username'/g' sonar-project.properties
 	sed -i '' 's/template-tdd-node-js/'$repo_name'/g' sonar-project.properties
-	sed -i '' 's/node-js-template/conde-'$repo_name'/g' sonar-project.properties
+	sed -i '' 's/node-js-template/lrce-'$repo_name'/g' sonar-project.properties
 	sed -i '' 's/"name": "nodejs-template",/"name": "'$repo_name'",/g' package.json 
 	sed -i '' 's/Dummy/'$camel_name'/g' src/Dummy.js test/Dummy.test.js
 	sed -i '' 's/Title/'"$title"'/g' README.md
-	sed -i '' 's/Homulilly_Clara_dolls/conde-'$repo_name'/g' project.tf
+	sed -i '' 's/dummy/'"$repo_name"'/g' README.md
+	sed -i '' 's/Luis-Rolando-Conde-Esnayra/'"$username"'/g' README.md
+	sed -i '' 's/Homulilly_Clara_dolls/lrce-'$repo_name'/g' project.tf
 	pwd=$(pwd)
 	mv "$pwd"/src/Dummy.js "$pwd"/src/$camel_name.js
 	mv "$pwd"/test/Dummy.test.js "$pwd"/test/$camel_name.test.js
@@ -134,42 +159,33 @@ initialCommit(){
 #open vscode on proyect folder
 openTabs(){ 
 	open https://app.snyk.io/
-	open https://sonarcloud.io/project/overview?id=conde-$repo_name
+	open https://sonarcloud.io/project/overview?id=lrce-$repo_name
 	open https://travis.ibm.com/$username/$repo_name
 	code .
 	echo "Repo creation succesful"
 }
 
+saveLinksReadme(){
+
+}
+
 #__________________________________PROJECT CONFIGURATION________________________________________
 
 
-#get environment variables
-source .env
-source ~/.zshrc
-cd ../Katas
+initialSetup
 
-#Repository Name
-while [ -z "$repo_name" ]; do
-read -p "Enter the repository name: " repo_name
-done
+getRepoName
 
 variableFormating
+
 checkTemplateAndUsername
-#Snyk and sonarCloud Tokens
 
-
-checkToken "SONAR_TOKEN" "https://sonarcloud.io/account/security/" "sonar cloud"
-checkToken "SNYK_TOKEN" "https://app.snyk.io/account" "snyk"
-
-export TF_VAR_token=$SONAR_TOKEN
-
+setupTokens
 #__________________________________GithubSetup________________________________________
 
 githubLogin
 
 repoCreateClone
-
-cd $repo_name
 
 travisLoginSync
 
@@ -181,6 +197,7 @@ nvm use
 
 #Install npm packages
 npm install
+
 npm audit fix
 
 manageEnvFile
@@ -199,4 +216,7 @@ enableTravis
 
 initialCommit
 
+saveLinksReadme
+
 openTabs
+
