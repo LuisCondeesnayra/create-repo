@@ -93,14 +93,14 @@ travisLoginSync(){
 removeReferences(){
 	sed -i '' 's/Luis-Rolando-Conde-Esnayra/'$username'/g' sonar-project.properties
 	sed -i '' 's/template-tdd-node-js/'$repo_name'/g' sonar-project.properties
-	sed -i '' 's/node-js-template/lrce-'$repo_name'/g' sonar-project.properties
+	sed -i '' 's/node-js-template/'$SONAR_IDENTIFIER''$repo_name'/g' sonar-project.properties
+	sed -i '' 's/sonarOrg/'$SONAR_ORG'/g' sonar-project.properties
 	sed -i '' 's/"name": "nodejs-template",/"name": "'$repo_name'",/g' package.json 
 	sed -i '' 's/Dummy/'$camel_name'/g' src/Dummy.js test/Dummy.test.js
 	sed -i '' 's/Title/'"$title"'/g' README.md
 	sed -i '' 's/dummy/'"$repo_name"'/g' README.md
 	sed -i '' 's/Luis-Rolando-Conde-Esnayra/'"$username"'/g' README.md
-	sed -i '' 's/Homulilly_Clara_dolls/lrce-'$repo_name'/g' project.tf
-	
+	sed -i '' 's/Homulilly_Clara_dolls/'$SONAR_IDENTIFIER''$repo_name'/g' project.tf
 	mv src/Dummy.js src/$camel_name.js
 	mv test/Dummy.test.js test/$camel_name.test.js
 	echo "References removed!"
@@ -138,6 +138,20 @@ runSonar(){
 	npm test 
 	npm run sonarrun
 	echo "Sonar Running"
+	   curl --include \
+        --request POST \
+        --header "Content-Type: application/x-www-form-urlencoded" \
+		-u ${SONAR_TOKEN}: \
+		-d "key=sonar.leak.period&value=previous_version&component=${SONAR_IDENTIFIER}${repo_name}" \
+        'https://sonarcloud.io/api/settings/set'
+		
+		  curl --include \
+        --request POST \
+        --header "Content-Type: application/x-www-form-urlencoded" \
+		-u ${SONAR_TOKEN}: \
+		-d "key=sonar.leak.period.type&value=previous_version&component=${SONAR_IDENTIFIER}${repo_name}" \
+        'https://sonarcloud.io/api/settings/set'
+
 }
 
 # Enable repo in travis
@@ -159,15 +173,12 @@ initialCommit(){
 #open vscode on proyect folder
 openTabs(){ 
 	open https://app.snyk.io/
-	open https://sonarcloud.io/project/overview?id=lrce-$repo_name
+	open https://sonarcloud.io/project/overview?id=$SONAR_IDENTIFIER$repo_name
 	open https://travis.ibm.com/$username/$repo_name
 	code .
 	echo "Repo creation succesful"
 }
 
-saveLinksReadme(){
-
-}
 
 #__________________________________PROJECT CONFIGURATION________________________________________
 
@@ -215,8 +226,6 @@ enableTravis
 #__________________________________Final Steps________________________________________
 
 initialCommit
-
-saveLinksReadme
 
 openTabs
 
