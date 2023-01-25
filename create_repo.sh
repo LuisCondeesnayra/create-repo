@@ -98,7 +98,7 @@ removeReferences(){
 	sed -i '' 's/"name": "nodejs-template",/"name": "'$repo_name'",/g' package.json 
 	sed -i '' 's/Dummy/'$camel_name'/g' src/Dummy.js test/Dummy.test.js
 	sed -i '' 's/Title/'"$title"'/g' README.md
-	sed -i '' 's/sonarid/'"$SONAR_IDENTIFIER"'/g' README.md
+	sed -i '' 's/sonarid/'"$SONAR_IDENTIFIER-"'/g' README.md
 	sed -i '' 's/dummy/'"$repo_name"'/g' README.md
 	sed -i '' 's/Luis-Rolando-Conde-Esnayra/'"$username"'/g' README.md
 	sed -i '' 's/Homulilly_Clara_dolls/'$SONAR_IDENTIFIER''$repo_name'/g' project.tf
