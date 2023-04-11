@@ -1,5 +1,7 @@
 #_____________________________________Functions_____________________________________
-
+initTimer(){
+start=$(date +%s)
+}
 initialSetup(){
 #get environment variables
 	source .env
@@ -12,21 +14,6 @@ getRepoName(){
 while [ -z "$repo_name" ]; do
 read -p "Enter the repository name: " repo_name
 done
-}
-
-setupTokens(){
-#Snyk and sonarCloud Tokens
-checkToken "SONAR_TOKEN" "https://sonarcloud.io/account/security/" "sonar cloud"
-checkToken "SNYK_TOKEN" "https://app.snyk.io/account" "snyk"
-export TF_VAR_token=$SONAR_TOKEN
-}
-checkToken (){
-# Check for non empty tokens
-	token=$1
-	while [ -z  "${!token}" ]; do
-		open $2
-		read -p "Please generate & introduce the token for $3"  ${token}
-	done
 }
 
 variableFormating(){ 
@@ -52,6 +39,13 @@ checkTemplateAndUsername(){
 	done
 }
 
+setupTokens(){
+#Snyk and sonarCloud Tokens
+checkToken "SONAR_TOKEN" "https://sonarcloud.io/account/security/" "sonar cloud"
+checkToken "SNYK_TOKEN" "https://app.snyk.io/account" "snyk"
+export TF_VAR_token=$SONAR_TOKEN
+}
+
 #Login in github 
 githubLogin(){
 	gh auth status  --hostname github.ibm.com 
@@ -60,6 +54,15 @@ githubLogin(){
 	else 
 			gh auth login --hostname github.ibm.com
 	fi
+}
+
+checkToken (){
+# Check for non empty tokens
+	token=$1
+	while [ -z  "${!token}" ]; do
+		open $2
+		read -p "Please generate & introduce the token for $3"  ${token}
+	done
 }
 
 #Repository creation from template
@@ -88,6 +91,14 @@ travisLoginSync(){
 	echo "Travis logged in"
 }
 
+npmCheck(){
+#change node version
+nvm use 
+#Install npm packages
+npm install
+npm audit fix
+}
+
 
 #Removing template references
 removeReferences(){
@@ -97,9 +108,10 @@ removeReferences(){
 	sed -i '' 's/sonarOrg/'$SONAR_ORG'/g' sonar-project.properties
 	sed -i '' 's/"name": "nodejs-template",/"name": "'$repo_name'",/g' package.json 
 	sed -i '' 's/Dummy/'$camel_name'/g' src/Dummy.js test/Dummy.test.js
-	sed -i '' 's/Title/'"$title"'/g' README.md
-	sed -i '' 's/sonarid/'"$SONAR_IDENTIFIER-"'/g' README.md
-	sed -i '' 's/dummy/'"$repo_name"'/g' README.md
+	sed -i '' 's/Title/'"$title"'/g' README.md 
+	sed -i '' 's/template-tdd-node-js/'"$repo_name"'/g' README.md 
+	sed -i '' 's/node-j/'"$SONAR_IDENTIFIER"'/g' README.md
+	sed -i '' 's/s-template/'"$repo_name"'/g' README.md
 	sed -i '' 's/Luis-Rolando-Conde-Esnayra/'"$username"'/g' README.md
 	sed -i '' 's/Homulilly_Clara_dolls/'$SONAR_IDENTIFIER''$repo_name'/g' project.tf
 	mv src/Dummy.js src/$camel_name.js
@@ -179,10 +191,6 @@ openTabs(){
 	code .
 	echo "Repo creation succesful"
 }
-
-initTimer(){
-start=$(date +%s)
-}
 endTimer(){
 end=$(date +%s)
 echo "Elapsed Time: $(($end-$start)) seconds"
@@ -213,13 +221,7 @@ travisLoginSync
 #__________________________________Manage npm and Files________________________________________
 removeReferences
 
-#change node version
-nvm use 
-
-#Install npm packages
-npm install
-
-npm audit fix
+npmCheck
 
 manageEnvFile
 
